@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS service_user (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    password VARCHAR(100)
+);
+
+CREATE TABLE IF NOT EXISTS user_message (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    text VARCHAR(100),
+    user_id INTEGER,
+    FOREIGN KEY(user_id) REFERENCES service_user (id)
+);
+
+

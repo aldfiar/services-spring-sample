@@ -1,0 +1,8 @@
+Пример с curl на Windows (проблема с одиночными кавычками), в случае если используется порт по умолчанию
+
+curl -X POST http://localhost:9800/api/register -H "Content-Type: application/json" -d "{\"name\": \"username\", \"password\": \"lar\"}"
+curl -X POST http://localhost:9800/api/token -H "Content-Type: application/json" -d "{\"name\": \"username\", \"password\": \"lar\"}"
+токен - полученный на предыдущем шаге
+curl -X POST http://localhost:9800/message/send -H "Content-Type: application/json" -H "Authorization: Bearer_токен" -d "{\"name\": \"username\", \"message\": \"hello\"}"
+curl -X POST http://localhost:9800/message/history -H "Content-Type: application/json" -H "Authorization: Bearer_токен" -d "{\"name\": \"username\", \"message\": \"history 10\"}"
+
