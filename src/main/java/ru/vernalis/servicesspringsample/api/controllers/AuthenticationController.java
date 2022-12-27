@@ -2,6 +2,7 @@ package ru.vernalis.servicesspringsample.api.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -9,7 +10,6 @@ import ru.vernalis.servicesspringsample.api.payloads.AuthenticationRequest;
 import ru.vernalis.servicesspringsample.api.payloads.AuthenticationResponse;
 import ru.vernalis.servicesspringsample.persistance.model.ServiceUser;
 import ru.vernalis.servicesspringsample.persistance.model.ServiceUserRepository;
-import ru.vernalis.servicesspringsample.security.HasherService;
 import ru.vernalis.servicesspringsample.security.JwtService;
 
 import javax.validation.Valid;
@@ -25,13 +25,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class AuthenticationController {
     private final JwtService jwtService;
     private final ServiceUserRepository serviceUserRepository;
-    private final HasherService hasherService;
+    private final PasswordEncoder passwordEncoder;
 
 
-    public AuthenticationController(JwtService jwtService, ServiceUserRepository serviceUserRepository, HasherService hasherService) {
+    public AuthenticationController(JwtService jwtService, ServiceUserRepository serviceUserRepository, PasswordEncoder passwordEncoder) {
         this.jwtService = jwtService;
         this.serviceUserRepository = serviceUserRepository;
-        this.hasherService = hasherService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -46,7 +46,7 @@ public class AuthenticationController {
         }
 
         ServiceUser user = serviceUserRepository.findUserByName(request.getName());
-        if (user == null || !hasherService.match(request.getPassword(), user.getPassword())) {
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
@@ -62,7 +62,7 @@ public class AuthenticationController {
      */
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity createUser(@Valid @RequestBody AuthenticationRequest request, BindingResult bindingResult) {
+    public ResponseEntity<String> createUser(@Valid @RequestBody AuthenticationRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -71,7 +71,7 @@ public class AuthenticationController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already exists");
         }
 
-        String password = hasherService.encrypt(request.getPassword());
+        String password = passwordEncoder.encode(request.getPassword());
         ServiceUser user = new ServiceUser();
         user.setName(request.getName());
         user.setPassword(password);
